@@ -1,4 +1,4 @@
-let data = { workers: [], trucks: [], payments: [] };
+let data = { workers: [], trucks: [], payments: [], payCycles: [] };
 let chart;
 let comparisonChart;
 
@@ -10,6 +10,15 @@ function loadData() {
     const stored = localStorage.getItem(getStorageKey());
     if (stored) {
         data = JSON.parse(stored);
+        // Migrate existing trucks to have cycleId
+        data.trucks.forEach(truck => {
+            if (!truck.cycleId) {
+                const date = new Date(truck.date);
+                const cycle = getCycleForDate(date);
+                truck.cycleId = cycle.id;
+            }
+        });
+        saveData(); // Save migrated data
     }
     renderAll();
 }
@@ -42,13 +51,16 @@ function addTruck(event) {
     const tonnage = parseFloat(document.getElementById('tonnage').value);
     const totalPay = parseFloat(document.getElementById('totalPay').value);
     if (plate && tonnage > 0 && totalPay > 0) {
+        const date = new Date().toISOString().split('T')[0];
+        const cycle = getCycleForDate(new Date(date));
         const truck = {
             id: Date.now(),
-            date: new Date().toISOString().split('T')[0],
+            date: date,
             plate,
             tonnage,
             totalPay,
-            attendance: []
+            attendance: [],
+            cycleId: cycle.id
         };
         data.trucks.push(truck);
         saveData();
@@ -62,6 +74,11 @@ function addTruck(event) {
 function toggleAttendance(truckId, worker) {
     const truck = data.trucks.find(t => t.id === truckId);
     if (truck) {
+        const cycle = data.payCycles.find(c => c.id === truck.cycleId);
+        if (cycle && cycle.closed) {
+            alert('Cannot edit attendance for a closed pay cycle.');
+            return;
+        }
         const index = truck.attendance.indexOf(worker);
         if (index > -1) {
             truck.attendance.splice(index, 1);
@@ -457,6 +474,10 @@ function updateDashboard() {
     const todaySummary = getWorkerTodaySummary(worker);
     document.getElementById('todayInfo').textContent = `Present Today: ${todaySummary.present ? 'Yes' : 'No'}, Trucks Worked: ${todaySummary.trucksCount}, Earnings Today: ${todaySummary.earnings}`;
 
+    // Current Cycle
+    const cycleInfo = getWorkerCurrentCycleInfo(worker);
+    document.getElementById('cycleInfo').textContent = `Current Cycle Earnings: ${cycleInfo.earnings}, Status: ${cycleInfo.status}, Payday: ${cycleInfo.payday}`;
+
     // Earnings Graphs
     const daily = getWorkerDailyEarnings(worker);
     const cumulative = getWorkerCumulativeEarnings(worker);
@@ -536,5 +557,117 @@ function updateDashboard() {
             tbody.appendChild(tr);
         });
     }
+}
+
+// Pay Cycle Functions
+function getPayday(date) {
+    const day = date.getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+    const payday = new Date(date);
+    if (day === 6 || day === 0 || day === 1 || day === 2) { // Sat, Sun, Mon, Tue -> Wed
+        const diff = (3 - day + 7) % 7;
+        payday.setDate(date.getDate() + diff);
+    } else { // Wed, Thu, Fri -> Sat
+        const diff = (6 - day + 7) % 7;
+        payday.setDate(date.getDate() + diff);
+    }
+    return payday;
+}
+
+function getPreviousPayday(payday) {
+    const day = payday.getDay();
+    const prev = new Date(payday);
+    if (day === 3) { // Wed, previous Sat
+        prev.setDate(payday.getDate() - 4);
+    } else { // Sat, previous Wed
+        prev.setDate(payday.getDate() - 3);
+    }
+    return prev;
+}
+
+function getCycleForDate(date) {
+    const payday = getPayday(date);
+    const pid = formatDate(payday);
+    let cycle = data.payCycles.find(c => c.id === pid);
+    if (!cycle) {
+        const prevPayday = getPreviousPayday(payday);
+        const start = new Date(prevPayday);
+        start.setDate(start.getDate() + 1);
+        cycle = {
+            id: pid,
+            startDate: formatDate(start),
+            endDate: formatDate(payday),
+            payday: formatDate(payday),
+            closed: false
+        };
+        data.payCycles.push(cycle);
+        saveData();
+    }
+    return cycle;
+}
+
+function getCurrentCycle() {
+    const today = new Date();
+    return getCycleForDate(today);
+}
+
+function payCurrentCycle() {
+    const cycle = getCurrentCycle();
+    if (cycle.closed) {
+        alert('Current cycle is already paid.');
+        return;
+    }
+    const workers = {};
+    data.trucks.forEach(truck => {
+        if (truck.cycleId === cycle.id) {
+            truck.attendance.forEach(w => {
+                if (!workers[w]) workers[w] = 0;
+                const payPerWorker = truck.totalPay / truck.attendance.length;
+                workers[w] += payPerWorker;
+            });
+        }
+    });
+    const today = formatDate(new Date());
+    Object.keys(workers).forEach(worker => {
+        const amount = workers[worker];
+        if (amount > 0) {
+            data.payments.push({
+                worker: worker,
+                amount: parseFloat(amount.toFixed(2)),
+                date: today,
+                paid: true,
+                cycleId: cycle.id
+            });
+        }
+    });
+    cycle.closed = true;
+    saveData();
+    renderAll();
+    alert('Current cycle paid successfully.');
+}
+
+function getWorkerCycleEarnings(worker, cycleId) {
+    let earnings = 0;
+    data.trucks.forEach(truck => {
+        if (truck.cycleId === cycleId && truck.attendance.includes(worker)) {
+            earnings += truck.totalPay / truck.attendance.length;
+        }
+    });
+    let paid = 0;
+    data.payments.forEach(payment => {
+        if (payment.worker === worker && payment.cycleId === cycleId && payment.paid) {
+            paid += payment.amount;
+        }
+    });
+    return parseFloat((earnings - paid).toFixed(2));
+}
+
+function getWorkerCurrentCycleInfo(worker) {
+    const cycle = getCurrentCycle();
+    const earnings = getWorkerCycleEarnings(worker, cycle.id);
+    return {
+        earnings: earnings,
+        status: cycle.closed ? 'Paid' : 'Open',
+        payday: cycle.payday
+    };
 }
 
