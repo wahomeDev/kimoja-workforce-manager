@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIMOJA - ELITE</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>ELITE Group</h1>
+        <nav>
+            <a href="homepage.html">Back to Home</a>
+        </nav>
+    </header>
+    <main>
+        <section id="workers">
+            <h2>Workers</h2>
+            <ul id="workerList"></ul>
+            <input type="text" id="newWorker" placeholder="New worker name">
+            <button onclick="addWorker()">Add Worker</button>
+        </section>
+        <section id="trucks">
+            <h2>Trucks</h2>
+            <div id="truckList"></div>
+            <form id="addTruckForm" onsubmit="addTruck(event)">
+                <input type="text" id="plate" placeholder="Plate" required>
+                <input type="number" id="tonnage" placeholder="Tonnage" required>
+                <input type="number" id="totalPay" placeholder="Total Pay" required>
+                <button type="submit">Add Truck</button>
+            </form>
+        </section>
+        <section id="payments">
+            <h2>Payments</h2>
+            <div id="unpaidTotals"></div>
+            <button onclick="payWorkers()">Pay Workers</button>
+            <h3>Payment History</h3>
+            <ul id="paymentHistory"></ul>
+        </section>
+        <section id="graphs">
+            <h2>Daily Earnings Graphs</h2>
+            <select id="workerSelect"></select>
+            <button onclick="updateGraph()">Update Graph</button>
+            <canvas id="earningsChart"></canvas>
+            <button onclick="exportData()">Export Daily Earnings Data</button>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 KIMOJA. All rights reserved.</p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="logic.js"></script>
+    <script>
+        const group = 'ELITE';
+        loadData();
+        document.getElementById('workerSelect').addEventListener('change', updateGraph);
+    </script>
+</body>
+</html>
