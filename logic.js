@@ -2,6 +2,13 @@ let data = { workers: [], trucks: [], payments: [], payCycles: [] };
 let chart;
 let comparisonChart;
 
+function formatDate(d) {
+    const yy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yy}-${mm}-${dd}`;
+}
+
 function getStorageKey() {
     return 'kimoja_' + group + '_data';
 }
@@ -10,6 +17,11 @@ function loadData() {
     const stored = localStorage.getItem(getStorageKey());
     if (stored) {
         data = JSON.parse(stored);
+        // Ensure all arrays exist for backward compatibility
+        if (!data.payCycles) data.payCycles = [];
+        if (!data.trucks) data.trucks = [];
+        if (!data.workers) data.workers = [];
+        if (!data.payments) data.payments = [];
         // Migrate existing trucks to have cycleId
         data.trucks.forEach(truck => {
             if (!truck.cycleId) {
@@ -322,6 +334,7 @@ function updateComparisonGraph() {
                 }
             },
             scales: {
+
                 y: { beginAtZero: true }
             }
         }
@@ -347,14 +360,6 @@ function prepareGroupDailyData() {
     const allDates = Object.keys(daily).sort();
     const minDate = new Date(allDates[0]);
     const maxDate = new Date(allDates[allDates.length - 1]);
-
-    // helper to format date YYYY-MM-DD
-    function formatDate(d) {
-        const yy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        return `${yy}-${mm}-${dd}`;
-    }
 
     const dates = [];
     for (let dt = new Date(minDate); dt <= maxDate; dt.setDate(dt.getDate() + 1)) {
