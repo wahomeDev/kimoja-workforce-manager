@@ -2,6 +2,44 @@ let data = { workers: [], trucks: [], payments: [], payCycles: [] };
 let chart;
 let comparisonChart;
 
+const financialTips = [
+    {
+        title: "Start Small Savings",
+        summary: "Save at least 50 shillings daily. Even small amounts add up over time and help build an emergency fund.",
+        link: "https://www.centralbank.go.ke/"
+    },
+    {
+        title: "Use M-Pesa Wisely",
+        summary: "M-Pesa is good for quick transfers, but avoid using it for loans. Save your M-Pesa balance for real needs.",
+        link: "https://www.safaricom.co.ke/personal/m-pesa"
+    },
+    {
+        title: "Avoid High-Interest Loans",
+        summary: "Loans from informal lenders can trap you in debt. Look for better options or save to avoid borrowing.",
+        link: "https://www.centralbank.go.ke/financial-education/"
+    },
+    {
+        title: "Plan for Irregular Income",
+        summary: "With daily work, income varies. Set aside a portion of good days for slower days.",
+        link: "https://www.fsdkenya.org/"
+    },
+    {
+        title: "Track Your Spending",
+        summary: "Keep a simple note of daily expenses. Knowing where money goes helps you spend wisely.",
+        link: "https://www.centralbank.go.ke/"
+    },
+    {
+        title: "Build Good Credit",
+        summary: "Pay bills on time and avoid defaults. Good credit helps when you need loans for important things.",
+        link: "https://www.metropol.co.ke/"
+    },
+    {
+        title: "Emergency Fund",
+        summary: "Aim to save 1-2 months of basic expenses. This protects you from unexpected problems.",
+        link: "https://www.centralbank.go.ke/financial-education/"
+    }
+];
+
 function formatDate(d) {
     const yy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -562,6 +600,17 @@ function updateDashboard() {
             tbody.appendChild(tr);
         });
     }
+
+    // Financial Tip
+    const tipElement = document.getElementById('tipContent');
+    if (tipElement) {
+        const tip = getDailyFinancialTip();
+        tipElement.innerHTML = `
+            <h3>${tip.title}</h3>
+            <p>${tip.summary}</p>
+            <p><a href="${tip.link}" target="_blank">Learn more</a></p>
+        `;
+    }
 }
 
 // Pay Cycle Functions
@@ -590,6 +639,7 @@ function getPreviousPayday(payday) {
 }
 
 function getCycleForDate(date) {
+    if (!data.payCycles) data.payCycles = [];
     const payday = getPayday(date);
     const pid = formatDate(payday);
     let cycle = data.payCycles.find(c => c.id === pid);
@@ -666,6 +716,11 @@ function getWorkerCycleEarnings(worker, cycleId) {
     return parseFloat((earnings - paid).toFixed(2));
 }
 
+function getDailyFinancialTip() {
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    const index = dayOfYear % financialTips.length;
+    return financialTips[index];
+}
 function getWorkerCurrentCycleInfo(worker) {
     const cycle = getCurrentCycle();
     const earnings = getWorkerCycleEarnings(worker, cycle.id);
