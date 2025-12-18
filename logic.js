@@ -40,6 +40,34 @@ const financialTips = [
     }
 ];
 
+function login() {
+    const group = document.getElementById('loginGroup').value.trim().toUpperCase();
+    const worker = document.getElementById('loginWorker').value.trim();
+    if (!group) return;
+    const role = worker ? 'worker' : 'admin';
+    sessionStorage.setItem('user', JSON.stringify({group, worker, role}));
+    if (role === 'worker') {
+        window.location.href = 'worker-dashboard.html';
+    } else {
+        // Admin stays on homepage or can navigate
+        document.getElementById('loginForm').style.display = 'none';
+        document.querySelector('nav').style.display = 'block';
+    }
+}
+
+function logout() {
+    sessionStorage.removeItem('user');
+    window.location.href = 'homepage.html';
+}
+
+function checkLogin() {
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    if (!user) {
+        window.location.href = 'homepage.html';
+    }
+    return user;
+}
+
 function formatDate(d) {
     const yy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');

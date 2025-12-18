@@ -11,6 +11,7 @@
         <h1>Worker Dashboard</h1>
         <nav>
             <a href="homepage.html">Back to Home</a>
+            <button onclick="logout()">Logout</button>
         </nav>
     </header>
     <main>
@@ -70,19 +71,38 @@
         let group = 'ELITE';
         const groups = ['ELITE', 'NGORONYO', 'SHERIF', 'SCORPION', 'ACHIEVERS', 'MWEA'];
         const groupSelect = document.getElementById('groupSelect');
-        groups.forEach(g => {
-            const option = document.createElement('option');
-            option.value = g;
-            option.textContent = g;
-            groupSelect.appendChild(option);
-        });
-        groupSelect.value = group;
-        loadData();
-        groupSelect.addEventListener('change', () => {
-            group = groupSelect.value;
+        const workerSelect = document.getElementById('workerSelect');
+        const user = checkLogin();
+        if (user.role === 'worker') {
+            group = user.group;
+            groupSelect.style.display = 'none';
+            workerSelect.style.display = 'none';
+            // Populate selects but hide
+            groups.forEach(g => {
+                const option = document.createElement('option');
+                option.value = g;
+                option.textContent = g;
+                groupSelect.appendChild(option);
+            });
             loadData();
-        });
-        document.getElementById('workerSelect').addEventListener('change', updateDashboard);
+            workerSelect.value = user.worker;
+            updateDashboard();
+        } else {
+            // Admin
+            groups.forEach(g => {
+                const option = document.createElement('option');
+                option.value = g;
+                option.textContent = g;
+                groupSelect.appendChild(option);
+            });
+            groupSelect.value = group;
+            loadData();
+            groupSelect.addEventListener('change', () => {
+                group = groupSelect.value;
+                loadData();
+            });
+            workerSelect.addEventListener('change', updateDashboard);
+        }
     </script>
 </body>
 </html>

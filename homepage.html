@@ -25,8 +25,14 @@
         <section>
             <h2>one people ene nation</h2>
 
-            <p></p>     
+            <p></p>
 
+            <div id="loginForm">
+                <h3>Login</h3>
+                <input type="text" id="loginGroup" placeholder="Group Name" required>
+                <input type="text" id="loginWorker" placeholder="Worker Name (leave empty for admin)">
+                <button onclick="login()">Login</button>
+            </div>
 
         </section>
 
@@ -34,6 +40,21 @@
     <footer>
         <p>&copy; 2024 Our Website. All rights reserved.</p>
     </footer>
+    <script src="logic.js"></script>
+    <script>
+        // Check if already logged in
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        if (user) {
+            if (user.role === 'admin') {
+                document.getElementById('loginForm').style.display = 'none';
+                document.querySelector('nav').style.display = 'block';
+            } else {
+                window.location.href = 'worker-dashboard.html';
+            }
+        } else {
+            document.querySelector('nav').style.display = 'none';
+        }
+    </script>
 </body>
 
 

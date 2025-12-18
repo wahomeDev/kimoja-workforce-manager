@@ -11,6 +11,7 @@
         <h1>NGORONYO Group</h1>
         <nav>
             <a href="homepage.html">Back to Home</a>
+            <button onclick="logout()">Logout</button>
         </nav>
     </header>
     <main>
@@ -60,6 +61,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="logic.js"></script>
     <script>
+        const user = checkLogin();
+        if (user.role !== 'admin') {
+            window.location.href = 'worker-dashboard.html';
+        }
         const group = 'NGORONYO';
         loadData();
         document.getElementById('workerSelect').addEventListener('change', updateGraph);
