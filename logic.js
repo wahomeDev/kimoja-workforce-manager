@@ -1,4 +1,4 @@
-let data = { workers: [], trucks: [], payments: [], payCycles: [] };
+let data = { workers: [], trucks: [], payments: [], payCycles: [], workerPins: {} };
 let chart;
 let comparisonChart;
 
@@ -45,11 +45,39 @@ function login() {
     const worker = document.getElementById('loginWorker').value.trim();
     if (!group) return;
     const role = worker ? 'worker' : 'admin';
+    if (role === 'worker') {
+        // Load data for the group
+        window.group = group;
+        loadData();
+        if (!data.workers.includes(worker)) {
+            alert('Worker not found in this group.');
+            return;
+        }
+        const pin = data.workerPins[worker];
+        if (!pin) {
+            // Set PIN
+            const newPin = prompt('Set your 4-digit PIN:');
+            const confirmPin = prompt('Confirm your PIN:');
+            if (!newPin || !confirmPin || newPin !== confirmPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+                alert('PIN must be 4 digits and match confirmation.');
+                return;
+            }
+            data.workerPins[worker] = newPin;
+            saveData();
+        } else {
+            // Verify PIN
+            const enteredPin = prompt('Enter your PIN:');
+            if (enteredPin !== pin) {
+                alert('Incorrect PIN.');
+                return;
+            }
+        }
+    }
     sessionStorage.setItem('user', JSON.stringify({group, worker, role}));
     if (role === 'worker') {
         window.location.href = 'worker-dashboard.html';
     } else {
-        // Admin stays on homepage or can navigate
+        // Admin
         document.getElementById('loginForm').style.display = 'none';
         document.querySelector('nav').style.display = 'block';
     }
@@ -88,6 +116,7 @@ function loadData() {
         if (!data.trucks) data.trucks = [];
         if (!data.workers) data.workers = [];
         if (!data.payments) data.payments = [];
+        if (!data.workerPins) data.workerPins = {};
         // Migrate existing trucks to have cycleId
         data.trucks.forEach(truck => {
             if (!truck.cycleId) {
@@ -117,6 +146,7 @@ function addWorker() {
     const name = document.getElementById('newWorker').value.trim();
     if (name && !data.workers.includes(name)) {
         data.workers.push(name);
+        data.workerPins[name] = null;
         saveData();
         renderAll();
         document.getElementById('newWorker').value = '';
