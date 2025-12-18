@@ -228,7 +228,7 @@ function updateGraph() {
     const worker = document.getElementById('workerSelect').value;
     if (!worker) return;
     const { labels, values } = prepareGraphData(worker);
-    if (chart) chart.destroy();
+    try { if (chart) chart.destroy(); } catch (e) {}
     const ctx = document.getElementById('earningsChart').getContext('2d');
     chart = new Chart(ctx, {
         type: 'bar',
@@ -281,7 +281,7 @@ function prepareComparisonData() {
 function updateComparisonGraph() {
     const canvas = document.getElementById('comparisonChart');
     if (!canvas) return;
-    if (comparisonChart) comparisonChart.destroy();
+    try { if (comparisonChart) comparisonChart.destroy(); } catch (e) {}
     const ctx = canvas.getContext('2d');
     const { labels, values } = prepareComparisonData();
     comparisonChart = new Chart(ctx, {
@@ -353,7 +353,7 @@ function prepareGroupDailyData() {
 function updateGroupDailyChart() {
     const canvas = document.getElementById('groupDailyChart');
     if (!canvas) return; // don't touch pages without the canvas
-    if (window.groupDailyChart) window.groupDailyChart.destroy();
+    try { if (window.groupDailyChart) window.groupDailyChart.destroy(); } catch (e) {}
     const ctx = canvas.getContext('2d');
     const { labels, values } = prepareGroupDailyData();
     window.groupDailyChart = new Chart(ctx, {
