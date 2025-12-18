@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - KIMOJA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,27 +16,27 @@
         </nav>
     </header>
     <main>
-        <section id="groupSelectSection">
+        <section id="groupSelectSection" class="card">
             <h2>Select Group</h2>
             <select id="groupSelect"></select>
         </section>
-        <section id="todaySnapshot">
+        <section id="todaySnapshot" class="card">
             <h2>Today Snapshot</h2>
             <p id="todayInfo"></p>
         </section>
-        <section id="wednesdayCycle">
+        <section id="wednesdayCycle" class="card">
             <h2>Wednesday Cycle Summary</h2>
             <p id="wednesdayInfo"></p>
         </section>
-        <section id="saturdayCycle">
+        <section id="saturdayCycle" class="card">
             <h2>Saturday Cycle Summary</h2>
             <p id="saturdayInfo"></p>
         </section>
-        <section id="groupComparison">
+        <section id="groupComparison" class="card">
             <h2>Group Performance Comparison</h2>
             <canvas id="groupChart"></canvas>
         </section>
-        <section id="alerts">
+        <section id="alerts" class="card">
             <h2>Alerts</h2>
             <div id="alertsList"></div>
         </section>

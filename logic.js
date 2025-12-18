@@ -385,14 +385,41 @@ function updateGraph() {
             plugins: {
                 title: {
                     display: true,
-                    text: worker + ' Daily Earnings'
+                    text: worker + ' Daily Earnings',
+                    color: '#e5e7eb'
+                },
+                legend: {
+                    labels: {
+                        color: '#9ca3af'
+                    }
                 }
             },
             scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#9ca3af'
+                    }
+                },
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255,255,255,0.1)'
+                    },
+                    ticks: {
+                        color: '#9ca3af'
+                    }
+                }
+            },
+            elements: {
+                line: {
+                    borderWidth: 3,
+                    tension: 0.4
                 }
             }
+        }
         }
     });
 }
@@ -439,12 +466,33 @@ function updateComparisonGraph() {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Total Earnings per Worker'
+                    text: 'Total Earnings per Worker',
+                    color: '#e5e7eb'
+                },
+                legend: {
+                    labels: {
+                        color: '#9ca3af'
+                    }
                 }
             },
             scales: {
-
-                y: { beginAtZero: true }
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#9ca3af'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255,255,255,0.1)'
+                    },
+                    ticks: {
+                        color: '#9ca3af'
+                    }
+                }
             }
         }
     });
@@ -502,9 +550,32 @@ function updateGroupDailyChart() {
         options: {
             responsive: true,
             plugins: {
-                title: { display: true, text: 'Group Daily Earnings (Total)'}
+                title: { display: true, text: 'Group Daily Earnings (Total)', color: '#e5e7eb' },
+                legend: {
+                    labels: {
+                        color: '#9ca3af'
+                    }
+                }
             },
-            scales: { y: { beginAtZero: true } }
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#9ca3af'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255,255,255,0.1)'
+                    },
+                    ticks: {
+                        color: '#9ca3af'
+                    }
+                }
+            }
         }
     });
 }
@@ -618,8 +689,39 @@ function updateDashboard() {
             },
             options: {
                 responsive: true,
-                plugins: { title: { display: true, text: 'Daily Earnings' } },
-                scales: { y: { beginAtZero: true } }
+                plugins: {
+                    title: { display: true, text: 'Daily Earnings', color: '#e5e7eb' },
+                    legend: {
+                        labels: {
+                            color: '#9ca3af'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#9ca3af'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255,255,255,0.1)'
+                        },
+                        ticks: {
+                            color: '#9ca3af'
+                        }
+                    }
+                },
+                elements: {
+                    line: {
+                        borderWidth: 3,
+                        tension: 0.4
+                    }
+                }
             }
         });
     }
@@ -646,8 +748,39 @@ function updateDashboard() {
             },
             options: {
                 responsive: true,
-                plugins: { title: { display: true, text: 'Cumulative Earnings' } },
-                scales: { y: { beginAtZero: true } }
+                plugins: {
+                    title: { display: true, text: 'Cumulative Earnings', color: '#e5e7eb' },
+                    legend: {
+                        labels: {
+                            color: '#9ca3af'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#9ca3af'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255,255,255,0.1)'
+                        },
+                        ticks: {
+                            color: '#9ca3af'
+                        }
+                    }
+                },
+                elements: {
+                    line: {
+                        borderWidth: 3,
+                        tension: 0.4
+                    }
+                }
             }
         });
     }
@@ -872,8 +1005,33 @@ function updateAdminDashboard() {
         },
         options: {
             responsive: true,
-            plugins: { title: { display: true, text: 'Group Performance Comparison' } },
-            scales: { y: { beginAtZero: true } }
+            plugins: {
+                title: { display: true, text: 'Group Performance Comparison', color: '#e5e7eb' },
+                legend: {
+                    labels: {
+                        color: '#9ca3af'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#9ca3af'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255,255,255,0.1)'
+                    },
+                    ticks: {
+                        color: '#9ca3af'
+                    }
+                }
+            }
         }
     });
 

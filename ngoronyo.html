@@ -15,13 +15,13 @@
         </nav>
     </header>
     <main>
-        <section id="workers">
+        <section id="workers" class="card">
             <h2>Workers</h2>
             <ul id="workerList"></ul>
             <input type="text" id="newWorker" placeholder="New worker name">
             <button onclick="addWorker()">Add Worker</button>
         </section>
-        <section id="trucks">
+        <section id="trucks" class="card">
             <h2>Trucks</h2>
             <div id="truckList"></div>
             <form id="addTruckForm" onsubmit="addTruck(event)">
@@ -31,7 +31,7 @@
                 <button type="submit">Add Truck</button>
             </form>
         </section>
-        <section id="payments">
+        <section id="payments" class="card">
             <h2>Payments</h2>
             <div id="unpaidTotals"></div>
             <button onclick="payWorkers()">Pay Workers</button>
@@ -41,7 +41,7 @@
             <h3>Payment History</h3>
             <ul id="paymentHistory"></ul>
         </section>
-        <section id="graphs">
+        <section id="graphs" class="card">
             <h2>Daily Earnings Graphs</h2>
             <select id="workerSelect"></select>
             <button onclick="updateGraph()">Update Graph</button>

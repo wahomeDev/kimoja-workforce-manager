@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Worker Dashboard - KIMOJA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,35 +16,35 @@
         </nav>
     </header>
     <main>
-        <section id="workerSelectSection">
+        <section id="workerSelectSection" class="card">
             <h2>Select Group and Worker</h2>
             <select id="groupSelect"></select>
             <select id="workerSelect"></select>
         </section>
-        <section id="headerSection">
+        <section id="headerSection" class="card">
             <h2>Worker Info</h2>
             <p id="workerInfo"></p>
         </section>
-        <section id="todaySummary">
+        <section id="todaySummary" class="card">
             <h2>Today Summary</h2>
             <p id="todayInfo"></p>
         </section>
-        <section id="currentCycle">
+        <section id="currentCycle" class="card">
             <h2>Current Cycle</h2>
             <p id="cycleInfo"></p>
         </section>
-        <section id="earningsGraphs">
+        <section id="earningsGraphs" class="card">
             <h2>Earnings Graphs</h2>
             <p id="dailyMessage"></p>
             <canvas id="dailyChart"></canvas>
             <p id="cumulativeMessage"></p>
             <canvas id="cumulativeChart"></canvas>
         </section>
-        <section id="paymentStatus">
+        <section id="paymentStatus" class="card">
             <h2>Payment Status</h2>
             <p id="paymentInfo"></p>
         </section>
-        <section id="workHistory">
+        <section id="workHistory" class="card">
             <h2>Work History</h2>
             <table id="historyTable">
                 <thead>
@@ -57,7 +58,7 @@
                 <tbody id="historyBody"></tbody>
             </table>
         </section>
-        <section id="financialLiteracy">
+        <section id="financialLiteracy" class="card">
             <h2>Financial Tip of the Day</h2>
             <div id="tipContent"></div>
         </section>
