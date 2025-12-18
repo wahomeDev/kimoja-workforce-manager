@@ -1,5 +1,6 @@
 let data = { workers: [], trucks: [], payments: [] };
 let chart;
+let comparisonChart;
 
 function getStorageKey() {
     return 'kimoja_' + group + '_data';
@@ -21,6 +22,8 @@ function renderAll() {
     renderWorkers();
     renderAllTrucks();
     renderPayments();
+    updateComparisonGraph();
+    updateGroupDailyChart();
 }
 
 function addWorker() {
@@ -51,6 +54,7 @@ function addTruck(event) {
         saveData();
         addTruckToDOM(truck);
         if (document.getElementById('workerSelect').value) updateGraph();
+        updateComparisonGraph();
         document.getElementById('addTruckForm').reset();
     }
 }
@@ -67,6 +71,7 @@ function toggleAttendance(truckId, worker) {
         saveData();
         renderPayments();
         if (document.getElementById('workerSelect').value) updateGraph();
+        updateComparisonGraph();
     }
 }
 
@@ -102,16 +107,19 @@ function payWorkers() {
     });
     saveData();
     renderPayments();
+    updateComparisonGraph();
 }
 
 function renderWorkers() {
     const list = document.getElementById('workerList');
-    list.innerHTML = '';
-    data.workers.forEach(worker => {
-        const li = document.createElement('li');
-        li.textContent = worker;
-        list.appendChild(li);
-    });
+    if (list) {
+        list.innerHTML = '';
+        data.workers.forEach(worker => {
+            const li = document.createElement('li');
+            li.textContent = worker;
+            list.appendChild(li);
+        });
+    }
     const select = document.getElementById('workerSelect');
     if (select) {
         select.innerHTML = '';
@@ -123,21 +131,28 @@ function renderWorkers() {
         });
         if (data.workers.length > 0 && !select.value) {
             select.value = data.workers[0];
-            updateGraph();
+            if (typeof updateDashboard === 'function') {
+                updateDashboard();
+            } else {
+                updateGraph();
+            }
         }
     }
 }
 
 function renderAllTrucks() {
     const container = document.getElementById('truckList');
-    container.innerHTML = '';
-    data.trucks.forEach(truck => {
-        addTruckToDOM(truck);
-    });
+    if (container) {
+        container.innerHTML = '';
+        data.trucks.forEach(truck => {
+            addTruckToDOM(truck);
+        });
+    }
 }
 
 function addTruckToDOM(truck) {
     const container = document.getElementById('truckList');
+    if (!container) return;
     const div = document.createElement('div');
     div.className = 'truck';
     div.innerHTML = `
@@ -157,30 +172,40 @@ function addTruckToDOM(truck) {
 }
 
 function renderPayments() {
-    const totals = calculateUnpaid();
     const unpaidDiv = document.getElementById('unpaidTotals');
-    unpaidDiv.innerHTML = '<h3>Unpaid Totals</h3>';
-    data.workers.forEach(worker => {
-        const div = document.createElement('div');
-        div.className = 'worker-total';
-        div.innerHTML = `<span>${worker}</span><span>${totals[worker].toFixed(2)}</span>`;
-        unpaidDiv.appendChild(div);
-    });
+    if (unpaidDiv) {
+        unpaidDiv.innerHTML = '<h3>Unpaid Totals</h3>';
+        data.workers.forEach(worker => {
+            const div = document.createElement('div');
+            div.className = 'worker-total';
+            div.innerHTML = `<span>${worker}</span><span>${calculateUnpaid()[worker].toFixed(2)}</span>`;
+            unpaidDiv.appendChild(div);
+        });
+    }
 
     const historyList = document.getElementById('paymentHistory');
-    historyList.innerHTML = '';
-    data.payments.forEach(payment => {
-        const li = document.createElement('li');
-        li.textContent = `${payment.date}: ${payment.worker} - ${payment.amount.toFixed(2)}`;
-        historyList.appendChild(li);
-    });
+    if (historyList) {
+        historyList.innerHTML = '';
+        data.payments.forEach(payment => {
+            const li = document.createElement('li');
+            li.textContent = `${payment.date}: ${payment.worker} - ${payment.amount.toFixed(2)}`;
+            historyList.appendChild(li);
+        });
+    }
 }
 
 function prepareGraphData(workerName) {
     const dailyEarnings = getDailyEarnings();
-    const allDates = Object.keys(dailyEarnings).sort();
-    const labels = allDates;
-    const values = allDates.map(date => dailyEarnings[date][workerName] || 0);
+    const workerDates = Object.keys(dailyEarnings).filter(date => dailyEarnings[date][workerName] > 0);
+    if (workerDates.length === 0) return { labels: [], values: [] };
+    const minDate = new Date(Math.min(...workerDates.map(d => new Date(d))));
+    const maxDate = new Date(Math.max(...workerDates.map(d => new Date(d))));
+    const dates = [];
+    for (let dt = new Date(minDate); dt <= maxDate; dt.setDate(dt.getDate() + 1)) {
+        dates.push(new Date(dt).toISOString().split('T')[0]);
+    }
+    const labels = dates.map(d => d.split('-')[2]);
+    const values = dates.map(d => dailyEarnings[d] ? (dailyEarnings[d][workerName] || 0) : 0);
     return { labels, values };
 }
 
@@ -234,6 +259,125 @@ function updateGraph() {
     });
 }
 
+function prepareComparisonData() {
+    const totals = {};
+    data.workers.forEach(w => totals[w] = 0);
+    data.trucks.forEach(truck => {
+        if (truck.attendance.length > 0) {
+            const payPer = truck.totalPay / truck.attendance.length;
+            truck.attendance.forEach(worker => {
+                if (totals[worker] !== undefined) totals[worker] += payPer;
+            });
+        }
+    });
+    data.payments.forEach(p => {
+        if (totals[p.worker] !== undefined) totals[p.worker] -= p.amount;
+    });
+    const labels = Object.keys(totals);
+    const values = labels.map(l => parseFloat(totals[l].toFixed(2)));
+    return { labels, values };
+}
+
+function updateComparisonGraph() {
+    const canvas = document.getElementById('comparisonChart');
+    if (!canvas) return;
+    if (comparisonChart) comparisonChart.destroy();
+    const ctx = canvas.getContext('2d');
+    const { labels, values } = prepareComparisonData();
+    comparisonChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total Earnings',
+                data: values,
+                backgroundColor: 'rgba(54, 162, 235, 0.4)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Total Earnings per Worker'
+                }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+function prepareGroupDailyData() {
+    // Build a continuous date range from earliest to latest truck, summing totalPay per day (only trucks with attendance)
+    const daily = {};
+    if (data.trucks.length === 0) return { labels: [], values: [] };
+
+    // collect all truck dates and initialize sums
+    data.trucks.forEach(truck => {
+        const date = truck.date; // 'YYYY-MM-DD'
+        if (!daily[date]) daily[date] = 0;
+        if (truck.attendance && truck.attendance.length > 0) {
+            // count the whole truck.totalPay as group productivity for that day
+            daily[date] += truck.totalPay;
+        }
+    });
+
+    // Determine full date range (inclusive)
+    const allDates = Object.keys(daily).sort();
+    const minDate = new Date(allDates[0]);
+    const maxDate = new Date(allDates[allDates.length - 1]);
+
+    // helper to format date YYYY-MM-DD
+    function formatDate(d) {
+        const yy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yy}-${mm}-${dd}`;
+    }
+
+    const dates = [];
+    for (let dt = new Date(minDate); dt <= maxDate; dt.setDate(dt.getDate() + 1)) {
+        dates.push(formatDate(new Date(dt)));
+    }
+
+    // Prepare labels as day numbers (DD) and values with zeros for missing days
+    const labels = dates.map(d => d.split('-')[2]);
+    const values = dates.map(d => parseFloat((daily[d] || 0).toFixed(2)));
+    return { labels, values };
+}
+
+function updateGroupDailyChart() {
+    const canvas = document.getElementById('groupDailyChart');
+    if (!canvas) return; // don't touch pages without the canvas
+    if (window.groupDailyChart) window.groupDailyChart.destroy();
+    const ctx = canvas.getContext('2d');
+    const { labels, values } = prepareGroupDailyData();
+    window.groupDailyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Group Daily Total',
+                data: values,
+                backgroundColor: 'rgba(255, 159, 64, 0.4)',
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { display: true, text: 'Group Daily Earnings (Total)'}
+            },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+
 function exportData() {
     const dataStr = JSON.stringify(getDailyEarnings(), null, 2);
     const blob = new Blob([dataStr], {type: 'application/json'});
@@ -242,5 +386,155 @@ function exportData() {
     a.href = url;
     a.download = group + '_daily_earnings.json';
     a.click();
+}
+
+function getWorkerTodaySummary(worker) {
+    const today = new Date().toISOString().split('T')[0];
+    let present = false;
+    let trucksCount = 0;
+    let earnings = 0;
+    data.trucks.forEach(truck => {
+        if (truck.date === today && truck.attendance.includes(worker)) {
+            present = true;
+            trucksCount++;
+            earnings += truck.totalPay / truck.attendance.length;
+        }
+    });
+    return { present, trucksCount, earnings: parseFloat(earnings.toFixed(2)) };
+}
+
+function getWorkerDailyEarnings(worker) {
+    return prepareGraphData(worker);
+}
+
+function getWorkerCumulativeEarnings(worker) {
+    const { labels, values } = prepareGraphData(worker);
+    const cumulative = [];
+    let sum = 0;
+    values.forEach(v => {
+        sum += v;
+        cumulative.push(parseFloat(sum.toFixed(2)));
+    });
+    return { labels, values: cumulative };
+}
+
+function getWorkerPaymentStatus(worker) {
+    const totals = calculateUnpaid();
+    const unpaid = totals[worker] || 0;
+    const paid = data.payments.filter(p => p.worker === worker).reduce((sum, p) => sum + p.amount, 0);
+    const lastPayment = data.payments.filter(p => p.worker === worker).sort((a,b) => b.date.localeCompare(a.date))[0];
+    const lastPaymentDate = lastPayment ? lastPayment.date : 'None';
+    return { unpaid: parseFloat(unpaid.toFixed(2)), paid: parseFloat(paid.toFixed(2)), lastPaymentDate };
+}
+
+function getWorkerWorkHistory(worker) {
+    const history = [];
+    const paidTotal = data.payments.filter(p => p.worker === worker).reduce((sum, p) => sum + p.amount, 0);
+    let cumulativeEarned = 0;
+    data.trucks.filter(truck => truck.attendance.includes(worker)).sort((a,b) => a.date.localeCompare(b.date)).forEach(truck => {
+        const amount = truck.totalPay / truck.attendance.length;
+        cumulativeEarned += amount;
+        const status = cumulativeEarned <= paidTotal ? 'Paid' : 'Unpaid';
+        history.push({
+            date: truck.date,
+            plate: truck.plate,
+            amount: parseFloat(amount.toFixed(2)),
+            status
+        });
+    });
+    return history;
+}
+
+function updateDashboard() {
+    const worker = document.getElementById('workerSelect').value;
+    if (!worker) return;
+
+    // Header
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('workerInfo').textContent = `Worker: ${worker}, Group: ${group}, Date: ${today}`;
+
+    // Today Summary
+    const todaySummary = getWorkerTodaySummary(worker);
+    document.getElementById('todayInfo').textContent = `Present Today: ${todaySummary.present ? 'Yes' : 'No'}, Trucks Worked: ${todaySummary.trucksCount}, Earnings Today: ${todaySummary.earnings}`;
+
+    // Earnings Graphs
+    const daily = getWorkerDailyEarnings(worker);
+    const cumulative = getWorkerCumulativeEarnings(worker);
+
+    // Daily Chart
+    const dailyMsg = document.getElementById('dailyMessage');
+    if (daily.labels.length === 0) {
+        dailyMsg.textContent = 'No earnings data for daily chart';
+        if (window.dailyChart) window.dailyChart.destroy();
+    } else {
+        dailyMsg.textContent = '';
+        if (window.dailyChart) window.dailyChart.destroy();
+        const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+        window.dailyChart = new Chart(dailyCtx, {
+            type: 'line',
+            data: {
+                labels: daily.labels,
+                datasets: [{
+                    label: 'Daily Earnings',
+                    data: daily.values,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { title: { display: true, text: 'Daily Earnings' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    // Cumulative Chart
+    const cumMsg = document.getElementById('cumulativeMessage');
+    if (cumulative.labels.length === 0) {
+        cumMsg.textContent = 'No earnings data for cumulative chart';
+        if (window.cumulativeChart) window.cumulativeChart.destroy();
+    } else {
+        cumMsg.textContent = '';
+        if (window.cumulativeChart) window.cumulativeChart.destroy();
+        const cumCtx = document.getElementById('cumulativeChart').getContext('2d');
+        window.cumulativeChart = new Chart(cumCtx, {
+            type: 'line',
+            data: {
+                labels: cumulative.labels,
+                datasets: [{
+                    label: 'Cumulative Earnings',
+                    data: cumulative.values,
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { title: { display: true, text: 'Cumulative Earnings' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    // Payment Status
+    const paymentStatus = getWorkerPaymentStatus(worker);
+    document.getElementById('paymentInfo').textContent = `Total Unpaid: ${paymentStatus.unpaid}, Total Paid: ${paymentStatus.paid}, Last Payment Date: ${paymentStatus.lastPaymentDate}`;
+
+    // Work History
+    const history = getWorkerWorkHistory(worker);
+    const tbody = document.getElementById('historyBody');
+    tbody.innerHTML = '';
+    if (history.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td colspan="4">No work history</td>';
+        tbody.appendChild(tr);
+    } else {
+        history.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${row.date}</td><td>${row.plate}</td><td>${row.amount}</td><td>${row.status}</td>`;
+            tbody.appendChild(tr);
+        });
+    }
 }
 

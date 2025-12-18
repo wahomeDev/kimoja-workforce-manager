@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Dashboard - KIMOJA</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Worker Dashboard</h1>
+        <nav>
+            <a href="homepage.html">Back to Home</a>
+        </nav>
+    </header>
+    <main>
+        <section id="workerSelectSection">
+            <h2>Select Group and Worker</h2>
+            <select id="groupSelect"></select>
+            <select id="workerSelect"></select>
+        </section>
+        <section id="headerSection">
+            <h2>Worker Info</h2>
+            <p id="workerInfo"></p>
+        </section>
+        <section id="todaySummary">
+            <h2>Today Summary</h2>
+            <p id="todayInfo"></p>
+        </section>
+        <section id="earningsGraphs">
+            <h2>Earnings Graphs</h2>
+            <p id="dailyMessage"></p>
+            <canvas id="dailyChart"></canvas>
+            <p id="cumulativeMessage"></p>
+            <canvas id="cumulativeChart"></canvas>
+        </section>
+        <section id="paymentStatus">
+            <h2>Payment Status</h2>
+            <p id="paymentInfo"></p>
+        </section>
+        <section id="workHistory">
+            <h2>Work History</h2>
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Truck Plate</th>
+                        <th>Amount Earned</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+            </table>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 KIMOJA. All rights reserved.</p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="logic.js"></script>
+    <script>
+        let group = 'ELITE';
+        const groups = ['ELITE', 'NGORONYO', 'SHERIF', 'SCORPION', 'ACHIEVERS', 'MWEA'];
+        const groupSelect = document.getElementById('groupSelect');
+        groups.forEach(g => {
+            const option = document.createElement('option');
+            option.value = g;
+            option.textContent = g;
+            groupSelect.appendChild(option);
+        });
+        groupSelect.value = group;
+        loadData();
+        groupSelect.addEventListener('change', () => {
+            group = groupSelect.value;
+            loadData();
+        });
+        document.getElementById('workerSelect').addEventListener('change', updateDashboard);
+    </script>
+</body>
+</html>
