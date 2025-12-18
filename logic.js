@@ -831,8 +831,7 @@ function updateAdminDashboard() {
     document.getElementById('todayInfo').textContent = `Trucks: ${todayTrucks.length}, Total Amount: ${totalAmount.toFixed(2)}, Active Workers: ${activeWorkers.size}`;
 
     // Cycle Summaries
-    const wedCycle = getCurrentCycle(); // Assuming current is Wednesday if today is Wed
-    const satCycle = data.payCycles.find(c => c.payday !== wedCycle.payday && !c.closed); // Simple, find another open
+    const wedCycle = getCurrentCycle();
 
     // Wednesday Cycle
     const wedTrucks = data.trucks.filter(t => t.cycleId === wedCycle.id);
