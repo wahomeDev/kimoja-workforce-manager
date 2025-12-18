@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - KIMOJA</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Admin Dashboard</h1>
+        <nav>
+            <a href="homepage.html">Back to Home</a>
+            <button onclick="logout()">Logout</button>
+        </nav>
+    </header>
+    <main>
+        <section id="groupSelectSection">
+            <h2>Select Group</h2>
+            <select id="groupSelect"></select>
+        </section>
+        <section id="todaySnapshot">
+            <h2>Today Snapshot</h2>
+            <p id="todayInfo"></p>
+        </section>
+        <section id="wednesdayCycle">
+            <h2>Wednesday Cycle Summary</h2>
+            <p id="wednesdayInfo"></p>
+        </section>
+        <section id="saturdayCycle">
+            <h2>Saturday Cycle Summary</h2>
+            <p id="saturdayInfo"></p>
+        </section>
+        <section id="groupComparison">
+            <h2>Group Performance Comparison</h2>
+            <canvas id="groupChart"></canvas>
+        </section>
+        <section id="alerts">
+            <h2>Alerts</h2>
+            <div id="alertsList"></div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 KIMOJA. All rights reserved.</p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="logic.js"></script>
+    <script>
+        const user = checkLogin();
+        if (user.role !== 'admin') {
+            window.location.href = 'worker-dashboard.html';
+        }
+        let group = 'ELITE';
+        const groups = ['ELITE', 'NGORONYO', 'SHERIF', 'SCORPION', 'ACHIEVERS', 'MWEA'];
+        const groupSelect = document.getElementById('groupSelect');
+        groups.forEach(g => {
+            const option = document.createElement('option');
+            option.value = g;
+            option.textContent = g;
+            groupSelect.appendChild(option);
+        });
+        groupSelect.value = group;
+        loadData();
+        updateAdminDashboard();
+        groupSelect.addEventListener('change', () => {
+            group = groupSelect.value;
+            loadData();
+            updateAdminDashboard();
+        });
+    </script>
+</body>
+</html>

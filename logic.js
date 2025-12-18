@@ -40,6 +40,19 @@ const financialTips = [
     }
 ];
 
+function getAllGroupsData() {
+    const allData = {};
+    const groups = ['ELITE', 'NGORONYO', 'SHERIF', 'SCORPION', 'ACHIEVERS', 'MWEA'];
+    groups.forEach(g => {
+        const key = 'kimoja_' + g + '_data';
+        const stored = localStorage.getItem(key);
+        if (stored) {
+            allData[g] = JSON.parse(stored);
+        }
+    });
+    return allData;
+}
+
 function login() {
     const group = document.getElementById('loginGroup').value.trim().toUpperCase();
     const worker = document.getElementById('loginWorker').value.trim();
@@ -805,5 +818,84 @@ function getWorkerCurrentCycleInfo(worker) {
         status: cycle.closed ? 'Paid' : 'Open',
         payday: cycle.payday
     };
+}
+
+function updateAdminDashboard() {
+    const today = formatDate(new Date());
+
+    // Today Snapshot
+    const todayTrucks = data.trucks.filter(t => t.date === today);
+    const totalAmount = todayTrucks.reduce((sum, t) => sum + t.totalPay, 0);
+    const activeWorkers = new Set();
+    todayTrucks.forEach(t => t.attendance.forEach(w => activeWorkers.add(w)));
+    document.getElementById('todayInfo').textContent = `Trucks: ${todayTrucks.length}, Total Amount: ${totalAmount.toFixed(2)}, Active Workers: ${activeWorkers.size}`;
+
+    // Cycle Summaries
+    const wedCycle = getCurrentCycle(); // Assuming current is Wednesday if today is Wed
+    const satCycle = data.payCycles.find(c => c.payday !== wedCycle.payday && !c.closed); // Simple, find another open
+
+    // Wednesday Cycle
+    const wedTrucks = data.trucks.filter(t => t.cycleId === wedCycle.id);
+    const wedWorkers = new Set();
+    wedTrucks.forEach(t => t.attendance.forEach(w => wedWorkers.add(w)));
+    let wedUnpaid = 0;
+    wedWorkers.forEach(w => wedUnpaid += getWorkerCycleEarnings(w, wedCycle.id));
+    document.getElementById('wednesdayInfo').textContent = `Unpaid Total: ${wedUnpaid.toFixed(2)}, Trucks: ${wedTrucks.length}, Workers: ${wedWorkers.size}`;
+
+    // Saturday Cycle
+    const satCycle = data.payCycles.find(c => c.id !== wedCycle.id && !c.closed);
+    const satTrucks = satCycle ? data.trucks.filter(t => t.cycleId === satCycle.id) : [];
+    const satWorkers = new Set();
+    satTrucks.forEach(t => t.attendance.forEach(w => satWorkers.add(w)));
+    let satUnpaid = 0;
+    satWorkers.forEach(w => satUnpaid += getWorkerCycleEarnings(w, satCycle ? satCycle.id : ''));
+    document.getElementById('saturdayInfo').textContent = `Unpaid Total: ${satUnpaid.toFixed(2)}, Trucks: ${satTrucks.length}, Workers: ${satWorkers.size}`;
+
+    // Group Comparison Chart
+    const allData = getAllGroupsData();
+    const labels = Object.keys(allData);
+    const values = labels.map(g => {
+        const gData = allData[g];
+        return gData.trucks ? gData.trucks.length : 0; // Example: number of trucks
+    });
+    const ctx = document.getElementById('groupChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Number of Trucks',
+                data: values,
+                backgroundColor: 'rgba(54, 162, 235, 0.4)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { title: { display: true, text: 'Group Performance Comparison' } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // Alerts
+    const alerts = [];
+    // Trucks with zero attendance
+    data.trucks.forEach(t => {
+        if (t.attendance.length === 0) {
+            alerts.push(`Truck ${t.plate} has zero attendance.`);
+        }
+    });
+    // Workers inactive for 3+ days
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    const cutoff = formatDate(threeDaysAgo);
+    data.workers.forEach(w => {
+        const lastTruck = data.trucks.filter(t => t.attendance.includes(w)).sort((a,b) => b.date.localeCompare(a.date))[0];
+        if (!lastTruck || lastTruck.date < cutoff) {
+            alerts.push(`Worker ${w} inactive for 3+ days.`);
+        }
+    });
+    document.getElementById('alertsList').innerHTML = alerts.map(a => `<p>${a}</p>`).join('');
 }
 
