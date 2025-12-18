@@ -29,8 +29,18 @@
 
             <div id="loginForm">
                 <h3>Login</h3>
-                <input type="text" id="loginGroup" placeholder="Group Name" required>
-                <input type="text" id="loginWorker" placeholder="Worker Name (leave empty for admin)">
+                <select id="loginGroup" required>
+                    <option value="">Select Group</option>
+                    <option value="ELITE">ELITE</option>
+                    <option value="NGORONYO">NGORONYO</option>
+                    <option value="SHERIF">SHERIF</option>
+                    <option value="SCORPION">SCORPION</option>
+                    <option value="ACHIEVERS">ACHIEVERS</option>
+                    <option value="MWEA">MWEA</option>
+                </select>
+                <select id="loginWorker">
+                    <option value="">Select Worker (leave empty for admin)</option>
+                </select>
                 <button onclick="login()">Login</button>
             </div>
 
@@ -54,6 +64,23 @@
         } else {
             document.querySelector('nav').style.display = 'none';
         }
+
+        // Populate worker select on group change
+        document.getElementById('loginGroup').addEventListener('change', function() {
+            const group = this.value;
+            if (group) {
+                window.group = group;
+                loadData();
+                const workerSelect = document.getElementById('loginWorker');
+                workerSelect.innerHTML = '<option value="">Select Worker (leave empty for admin)</option>';
+                data.workers.forEach(worker => {
+                    const option = document.createElement('option');
+                    option.value = worker;
+                    option.textContent = worker;
+                    workerSelect.appendChild(option);
+                });
+            }
+        });
     </script>
 </body>
 
