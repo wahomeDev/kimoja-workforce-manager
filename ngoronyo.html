@@ -23,7 +23,7 @@
         <section id="trucks">
             <h2>Trucks</h2>
             <div id="truckList"></div>
-            <form id="addTruckForm">
+            <form id="addTruckForm" onsubmit="addTruck(event)">
                 <input type="text" id="plate" placeholder="Plate" required>
                 <input type="number" id="tonnage" placeholder="Tonnage" required>
                 <input type="number" id="totalPay" placeholder="Total Pay" required>
