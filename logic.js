@@ -758,6 +758,24 @@ function payCurrentCycle() {
     alert('Current cycle paid successfully.');
 }
 
+function payWednesdayCycle() {
+    const today = new Date().getDay();
+    if (today !== 3) {
+        alert('Wednesday payments can only be processed on Wednesdays.');
+        return;
+    }
+    payCurrentCycle();
+}
+
+function paySaturdayCycle() {
+    const today = new Date().getDay();
+    if (today !== 6) {
+        alert('Saturday payments can only be processed on Saturdays.');
+        return;
+    }
+    payCurrentCycle();
+}
+
 function getWorkerCycleEarnings(worker, cycleId) {
     let earnings = 0;
     data.trucks.forEach(truck => {
