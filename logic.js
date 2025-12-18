@@ -465,10 +465,10 @@ function updateDashboard() {
     const dailyMsg = document.getElementById('dailyMessage');
     if (daily.labels.length === 0) {
         dailyMsg.textContent = 'No earnings data for daily chart';
-        if (window.dailyChart) window.dailyChart.destroy();
+        try { if (window.dailyChart) window.dailyChart.destroy(); } catch (e) {}
     } else {
         dailyMsg.textContent = '';
-        if (window.dailyChart) window.dailyChart.destroy();
+        try { if (window.dailyChart) window.dailyChart.destroy(); } catch (e) {}
         const dailyCtx = document.getElementById('dailyChart').getContext('2d');
         window.dailyChart = new Chart(dailyCtx, {
             type: 'line',
@@ -493,10 +493,10 @@ function updateDashboard() {
     const cumMsg = document.getElementById('cumulativeMessage');
     if (cumulative.labels.length === 0) {
         cumMsg.textContent = 'No earnings data for cumulative chart';
-        if (window.cumulativeChart) window.cumulativeChart.destroy();
+        try { if (window.cumulativeChart) window.cumulativeChart.destroy(); } catch (e) {}
     } else {
         cumMsg.textContent = '';
-        if (window.cumulativeChart) window.cumulativeChart.destroy();
+        try { if (window.cumulativeChart) window.cumulativeChart.destroy(); } catch (e) {}
         const cumCtx = document.getElementById('cumulativeChart').getContext('2d');
         window.cumulativeChart = new Chart(cumCtx, {
             type: 'line',
