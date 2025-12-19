@@ -93,6 +93,7 @@ function login() {
         // Admin
         document.getElementById('loginForm').style.display = 'none';
         document.querySelector('nav').style.display = 'block';
+        document.getElementById('adminLink').style.display = 'block';
     }
 }
 
