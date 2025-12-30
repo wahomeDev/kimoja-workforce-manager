@@ -369,6 +369,7 @@ function updateGraph() {
     try { if (chart) chart.destroy(); } catch (e) {}
     const ctx = document.getElementById('earningsChart').getContext('2d');
     chart = new Chart(ctx, {
+        
         type: 'bar',
         data: {
             labels: labels,
@@ -1054,4 +1055,15 @@ function updateAdminDashboard() {
     });
     document.getElementById('alertsList').innerHTML = alerts.map(a => `<p>${a}</p>`).join('');
 }
+function resetAllData() {
+  if (!confirm("This will permanently clear ALL group data. Continue?")) return;
+
+  Object.keys(localStorage)
+    .filter(key => key.startsWith("kimoja_"))
+    .forEach(key => localStorage.removeItem(key));
+
+  alert("System reset complete.");
+  location.reload();
+}
+
 
