@@ -12,15 +12,15 @@ let firebase = null;
 let database = null;
 let isFirebaseReady = false;
 
-// Firebase configuration (REPLACE WITH YOUR OWN)
+// Firebase configuration (from your Firebase console)
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "your-project.firebaseapp.com",
-    databaseURL: "https://your-project.firebaseio.com",
-    projectId: "your-project",
-    storageBucket: "your-project.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyAsFb9omjiFm23GeEtGHubTnT_m_Wni8cM",
+    authDomain: "kimoja-workforce-manager.firebaseapp.com",
+    projectId: "kimoja-workforce-manager",
+    storageBucket: "kimoja-workforce-manager.firebasestorage.app",
+    messagingSenderId: "299942719994",
+    appId: "1:299942719994:web:93ccd8ce79799c90863443",
+    measurementId: "G-5CMWV2FBXD"
 };
 
 /**
