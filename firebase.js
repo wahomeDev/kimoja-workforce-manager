@@ -11,8 +11,9 @@
 let firebase = null;
 let database = null;
 let isFirebaseReady = false;
+let _firebaseLoadTimedOut = false;
 
-// Firebase configuration (from your Firebase console)
+// Firebase configuration (from your Firebase console)f
 const firebaseConfig = {
     apiKey: "AIzaSyAsFb9omjiFm23GeEtGHubTnT_m_Wni8cM",
     authDomain: "kimoja-workforce-manager.firebaseapp.com",
@@ -32,15 +33,25 @@ function initializeFirebase() {
     if (window.firebase) {
         try {
             firebase = window.firebase;
-            
-            // Initialize Firebase app
-            const app = firebase.initializeApp(firebaseConfig);
-            
-            // Get reference to Realtime Database
-            database = firebase.database(app);
+            // Avoid re-initializing if an app already exists
+            let app;
+            if (firebase.apps && firebase.apps.length > 0) {
+                app = firebase.apps[0];
+            } else {
+                app = firebase.initializeApp(firebaseConfig);
+            }
+
+            // Get reference to Realtime Database (compat)
+            try {
+                database = firebase.database(app);
+            } catch (dbErr) {
+                console.warn('⚠ Could not get Firebase Database reference:', dbErr.message);
+                database = null;
+            }
             
             isFirebaseReady = true;
             console.log('✓ Firebase initialized successfully');
+            _firebaseLoadTimedOut = false;
             
             // Optional: Start syncing data
             setupAutoSync();
@@ -191,3 +202,11 @@ function getFirebaseStatus() {
     };
     document.head.appendChild(script);
 })();
+
+// Fail-safe: if SDK does not load within 10s, mark as unavailable
+setTimeout(() => {
+    if (!isFirebaseReady) {
+        _firebaseLoadTimedOut = true;
+        console.warn('⚠ Firebase SDK did not initialize within timeout. Proceeding without Firebase.');
+    }
+}, 10_000);
